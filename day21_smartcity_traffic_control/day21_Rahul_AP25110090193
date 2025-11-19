@@ -1,0 +1,188 @@
+#include<stdio.h>
+#include<stdlib.h>
+#define max_vehicles 30
+int vehicleid[max_vehicles];
+int speed[max_vehicles];
+int lane[max_vehicles];
+int total_vehicles = 0;
+void inputdata()
+{
+    int id,spd,ln;
+    printf("enter vehicle data (max %d vehicles)\n",max_vehicles);
+    printf("enter 0 as vehicle id to stop input.\n\n");
+    while(total_vehicles<max_vehicles)
+    {
+        printf("vehicle is %d:\n",total_vehicles+1);
+        printf("enter 4 digit vehicle id:");
+        scanf("%d",&id);
+        if(id == 0) break;
+        if(id < 1000 || id > 9999)
+        {
+            printf("invalid id! must be 4 digits.\n\n");
+            continue;
+        }
+        printf("enter speed of the vehicle");
+        scanf("%d",&spd);
+        if(spd<=0)
+        {
+            printf("speed must be positive!\n\n");
+            continue;
+        }
+        printf("enter lane(1-4):");
+        scanf("%d",&ln);
+        if(ln<1 || ln>4)
+        {
+            printf("lane must be 1,2,3 or 4!\n\n");
+            continue;
+        }
+        vehicleid[total_vehicles] = id;
+        speed[total_vehicles] = spd;
+        lane[total_vehicles] = ln;
+        total_vehicles++;
+        printf("vehicles added successfully!\n\n");
+    }
+    printf("input completed! total vehicles recorded is %d\n\n",total_vehicles);
+}
+int countspeedviolations(int highestspeed, int lowestspeed)
+{
+    int count = 0;
+    highestspeed = 0;
+    lowestspeed = 9999;
+    for(int i = 0; i<total_vehicles; i++)
+    {
+        if(speed[i]>80)
+        {
+            count++;
+        }
+        if(speed[i]>highestspeed)
+        {
+            highestspeed = speed[i];
+        }
+        if(speed[i]<lowestspeed)
+        {
+            lowestspeed = speed[i];
+        }
+    }
+    printf("speed analysis:\n");
+    printf("total overspeeding vehicles is %d\n",count);
+    printf("highest speed recorded is %d\n",highestspeed);
+    printf("lowest speed recorded is %d\n",lowestspeed);
+    printf("\n");
+    return count;
+}
+int countlaneviolations(int serveid,int maxseverity)
+{
+    int count = 0;
+    serveid = -1;
+    maxseverity = -1;
+    for(int i=0; i<total_vehicles;i++)
+    {
+        int expectedlane = (vehicleid[i]%4 == 0) ? 4:(vehicleid[i]%4);
+        int currentlane = lane[i];
+        int severity = abs(expectedlane-currentlane);
+        if(expectedlane!=currentlane)
+        {
+            count++;
+            if(severity > maxseverity)
+            {
+                maxseverity = severity;
+                serveid = vehicleid[i];
+            }
+        }
+    }
+    printf("lane violation analysis:\n");
+    printf("total lane violations is %d\n",count);
+    if(count>0)
+    {
+        printf("most sreve lane violations is vehicle id is %d(srverity:%d)\n",serveid,maxseverity);
+    }
+    else
+    {
+        printf("no lane violations detected!\n");
+    }
+    printf("\n");
+    return count;
+}
+int busiestlane()
+{
+    int lanecount[4] = {0,0,0,0};
+    for(int i=0;i<total_vehicles;i++)
+    {
+        lanecount[lane[i]-1]++;
+    }
+    int maxcount = -1;
+    int busylane = -1;
+    for(int i=0;i<4;i++)
+    {
+        if(lanecount[i]>maxcount)
+        {
+            maxcount = i+1;
+            busylane = i+1;
+        }
+    }
+    printf("traffic density analysis:\n");
+    printf("lane 1: %d vehicles\n",lanecount[0]);
+    printf("lane 2: %d vehicles\n",lanecount[1]);
+    printf("lane 3: %d vehicles\n",lanecount[2]);
+    printf("lane 4: %d vehicles\n",lanecount[3]);
+    printf("busylane: lane is %d(%d vehicles)\n",busylane,maxcount);
+    return busylane;
+}
+int leastbusylane()
+{
+    int lanecount[4]={0,0,0,0};
+    for(int i=0;i<total_vehicles;i++)
+    {
+        lanecount[lane[i]-1]++;
+    }
+    int mincount = 9999;
+    int leastlane = -1;
+    for(int i=0;i<4;i++)
+    {
+        if(lanecount[i]<mincount)
+        {
+            mincount = lanecount[i];
+            leastlane = i+1;
+        }
+    }
+    printf("least busy lane: lane is %d(%d vehicles)\n",leastlane,mincount);
+    printf("total traffic volume is %d vehicles\n\n",total_vehicles);
+    return leastlane;
+}
+void displayreport()
+{
+    if(total_vehicles == 0)
+    {
+        printf("no data to display!\n");
+        return;
+    }
+    printf("TRAFFIC VIOLATION REPORT:\n");
+    printf("vehid  speed  lane  speedviolation  laneviolation:\n");
+    for(int i=0;i<total_vehicles;i++)
+    {
+        int expected = (vehicleid[i]%4==0)?4:(vehicleid[i]%4);
+        int isSpeedviolation = (speed[i]>80)?1:0;
+        int islaneviolation = (expected!=lane[i])?1:0;
+        printf("%-8d%-7d%-7d%-15s%-15s\n",vehicleid[i],speed[i],lane[i],isSpeedviolation?"yes":"no",islaneviolation?"yes":"no");
+    }
+    printf("=========\n\n");
+}
+int main()
+{
+    int highestspeed = 0, lowestspeed = 0;
+    int serveid = 0,maxseverity = 0;
+    printf("SMART CITY TRAFFIC CONTROL SYSTEM :\n");
+    inputdata();
+    if(total_vehicles == 0)
+    {
+        printf("no vehicles recorded!exiting...\n");
+        return 0;
+    }
+    countspeedviolations(highestspeed,lowestspeed);
+    countlaneviolations(serveid,maxseverity);
+    busiestlane();
+    leastbusylane();
+    displayreport();
+    printf("thankyou for using smart city traffic systen!\n");
+    return 0;
+}
